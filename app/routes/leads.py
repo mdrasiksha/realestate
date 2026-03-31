@@ -1,6 +1,6 @@
 from datetime import date
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
@@ -16,6 +16,18 @@ def create_lead(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
 ):
+    existing = (
+        db.query(models.Lead)
+        .filter(
+            models.Lead.phone == lead.phone,
+            models.Lead.user_id == current_user.id,
+        )
+        .first()
+    )
+
+    if existing:
+        raise HTTPException(status_code=400, detail="Lead with this phone already exists")
+
     return crud.create_lead(db, lead, current_user.id)
 
 
