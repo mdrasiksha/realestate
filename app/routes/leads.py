@@ -1,11 +1,14 @@
-from fastapi import APIRouter, Depends
 from datetime import date
+
+from fastapi import APIRouter, Depends
 from sqlalchemy import func
 from sqlalchemy.orm import Session
+
+from .. import crud, models, schemas
 from ..database import SessionLocal
-from .. import crud, schemas, models
 
 router = APIRouter()
+
 
 def get_db():
     db = SessionLocal()
@@ -17,16 +20,8 @@ def get_db():
 
 @router.post("/")
 def create_lead(lead: schemas.LeadCreate, db: Session = Depends(get_db)):
-    new_lead = models.Lead(
-        name=lead.name,
-        phone=lead.phone,
-        follow_up_date=lead.follow_up_date,
-        property_id=lead.property_id
-    )
-    db.add(new_lead)
-    db.commit()
-    db.refresh(new_lead)
-    return new_lead
+    return crud.create_lead(db, lead)
+
 
 @router.get("/")
 def list_leads(db: Session = Depends(get_db)):
@@ -44,26 +39,3 @@ def get_today_followups(db: Session = Depends(get_db)):
         )
         .all()
     )
-
-
-
-"""from fastapi import APIRouter
-
-router = APIRouter()
-
-@router.get("/")
-def test_leads():
-    return {"message": "leads working"}"""
-
-
-
-#from fastapi import APIRouter
-
-#router = APIRouter()
-
-#@router.get("/")
-#def test_properties():
-#    return {"message": "properties working"}
-
-
-
