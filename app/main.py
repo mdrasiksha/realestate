@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-
+from .reminder import start_scheduler
 from . import models
 from .database import Base, engine
 from .routes import leads, properties, webhook
@@ -8,8 +8,8 @@ app = FastAPI()
 
 
 @app.on_event("startup")
-def on_startup() -> None:
-    Base.metadata.create_all(bind=engine)
+def start_app():
+    start_scheduler()
 
 
 app.include_router(leads.router, prefix="/leads", tags=["Leads"])

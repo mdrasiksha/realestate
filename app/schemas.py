@@ -23,3 +23,7 @@ class PropertyCreate(BaseModel):
     location: str
     price: int
     type: str
+
+class WhatsAppWebhook(BaseModel):
+    name: str
+    phone: str
