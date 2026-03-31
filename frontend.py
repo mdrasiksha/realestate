@@ -1,7 +1,7 @@
 import requests
 import streamlit as st
 
-BASE_URL = "http://127.0.0.1:8000"
+BASE_URL = "https://your-render-url.onrender.com"
 
 st.title("Real Estate CRM Dashboard")
 
