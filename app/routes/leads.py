@@ -1,4 +1,6 @@
 from fastapi import APIRouter, Depends
+from datetime import date
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from ..database import SessionLocal
 from .. import crud, schemas, models
@@ -31,6 +33,19 @@ def list_leads(db: Session = Depends(get_db)):
     return crud.get_leads(db)
 
 
+@router.get("/today-followups")
+def get_today_followups(db: Session = Depends(get_db)):
+    today = date.today()
+    return (
+        db.query(models.Lead)
+        .filter(
+            models.Lead.follow_up_date.isnot(None),
+            func.date(models.Lead.follow_up_date) == today,
+        )
+        .all()
+    )
+
+
 
 """from fastapi import APIRouter
 
@@ -49,7 +64,6 @@ def test_leads():
 #@router.get("/")
 #def test_properties():
 #    return {"message": "properties working"}
-
 
 
 
