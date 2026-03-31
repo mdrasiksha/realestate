@@ -197,10 +197,12 @@ def render_dashboard():
                 if response.status_code in (200, 201):
                     st.success("Lead added successfully.")
                     st.rerun()
+                elif response.status_code == 400:
+                    st.warning("Lead already exists")
                 elif is_unauthorized(response):
                     st.warning("Unauthorized. Please login again.")
                 else:
-                    st.error(f"Failed to add lead: {response.text}")
+                    st.error("Failed to add lead. Please try again.")
             except requests.RequestException as exc:
                 st.error(f"Error connecting to backend: {exc}")
 
