@@ -18,6 +18,24 @@ def is_unauthorized(response: requests.Response) -> bool:
     return response.status_code in (401, 403)
 
 
+def login_user(email: str, password: str):
+    response = requests.post(
+        f"{BASE_URL}/auth/login",
+        json={"email": email.strip(), "password": password},
+        timeout=10,
+    )
+    return response
+
+
+def signup_user(email: str, password: str):
+    response = requests.post(
+        f"{BASE_URL}/auth/signup",
+        json={"email": email.strip(), "password": password},
+        timeout=10,
+    )
+    return response
+
+
 def fetch_leads():
     response = requests.get(f"{BASE_URL}/leads", headers=get_auth_headers(), timeout=10)
     if is_unauthorized(response):
@@ -69,39 +87,49 @@ def update_lead_status(lead_id: int, status: str):
     return False, last_error
 
 
-def render_login():
-    st.title("🔐 LeadNest Login")
-    st.caption("Sign in to access your CRM dashboard.")
+def render_auth():
+    st.title("🔐 LeadNest")
+    st.caption("Login or signup to access your CRM dashboard.")
 
+    auth_mode = st.radio("Choose action", ["Login", "Signup"], horizontal=True)
     email = st.text_input("Email")
     password = st.text_input("Password", type="password")
 
-    if st.button("Login", type="primary", use_container_width=True):
-        if not email.strip() or not password:
-            st.warning("Please enter both email and password.")
-            return
-
-        try:
-            response = requests.post(
-                f"{BASE_URL}/auth/login",
-                json={"email": email.strip(), "password": password},
-                timeout=10,
-            )
-            if response.status_code == 200:
-                payload = response.json()
-                token = payload.get("access_token")
-                if not token:
-                    st.error("Login succeeded but token was missing in response.")
-                    return
-                st.session_state["token"] = token
-                st.success("Login successful.")
-                st.rerun()
-            elif is_unauthorized(response):
-                st.error("Invalid email or password.")
-            else:
-                st.error(f"Login failed: {response.text}")
-        except requests.RequestException as exc:
-            st.error(f"Error connecting to backend: {exc}")
+    if auth_mode == "Signup":
+        if st.button("Signup", type="primary", use_container_width=True):
+            if not email.strip() or not password:
+                st.warning("Please enter both email and password.")
+                return
+            try:
+                response = signup_user(email=email, password=password)
+                if response.status_code in (200, 201):
+                    st.success("Signup successful. You can now login.")
+                else:
+                    st.error(f"Signup failed: {response.text}")
+            except requests.RequestException as exc:
+                st.error(f"Error connecting to backend: {exc}")
+    else:
+        if st.button("Login", type="primary", use_container_width=True):
+            if not email.strip() or not password:
+                st.warning("Please enter both email and password.")
+                return
+            try:
+                response = login_user(email=email, password=password)
+                if response.status_code == 200:
+                    payload = response.json()
+                    token = payload.get("access_token")
+                    if not token:
+                        st.error("Login succeeded but token was missing in response.")
+                        return
+                    st.session_state["token"] = token
+                    st.success("Login successful.")
+                    st.rerun()
+                elif is_unauthorized(response):
+                    st.error("Invalid email or password.")
+                else:
+                    st.error(f"Login failed: {response.text}")
+            except requests.RequestException as exc:
+                st.error(f"Error connecting to backend: {exc}")
 
 
 def logout():
@@ -268,4 +296,4 @@ if "token" not in st.session_state:
 if st.session_state.get("token"):
     render_dashboard()
 else:
-    render_login()
+    render_auth()
