@@ -315,3 +315,6 @@ if st.session_state.get("token"):
     render_dashboard()
 else:
     render_auth()
+
+
+st.write(BASE_URL)
