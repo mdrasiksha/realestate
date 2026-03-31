@@ -8,3 +8,4 @@ apscheduler
 passlib[bcrypt]
 bcrypt<5
 python-jose
+twilio
