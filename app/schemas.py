@@ -2,6 +2,22 @@ from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
 
+
+class UserSignup(BaseModel):
+    email: str
+    password: str
+
+
+class UserLogin(BaseModel):
+    email: str
+    password: str
+
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+
+
 class LeadCreate(BaseModel):
     name: str
     phone: str
