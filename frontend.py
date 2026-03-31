@@ -102,12 +102,30 @@ def render_auth():
                 return
             try:
                 response = signup_user(email=email, password=password)
-                if response.status_code in (200, 201):
-                    st.success("Signup successful. You can now login.")
+                st.caption(f"Debug status code: {response.status_code}")
+                st.caption(f"Debug response body: {response.text}")
+
+                if response.status_code == 200:
+                    st.success("Signup successful! Please login")
                 else:
-                    st.error(f"Signup failed: {response.text}")
-            except requests.RequestException as exc:
-                st.error(f"Error connecting to backend: {exc}")
+                    error_message = "Signup failed. Please try again."
+                    try:
+                        error_payload = response.json()
+                        if isinstance(error_payload, dict):
+                            error_message = (
+                                error_payload.get("detail")
+                                or error_payload.get("message")
+                                or error_payload.get("error")
+                                or error_message
+                            )
+                    except ValueError:
+                        if response.text.strip():
+                            error_message = response.text.strip()
+                    st.error(error_message)
+            except requests.RequestException:
+                st.error("Could not reach the server. Please try again in a moment.")
+            except Exception:
+                st.error("Something went wrong during signup. Please try again.")
     else:
         if st.button("Login", type="primary", use_container_width=True):
             if not email.strip() or not password:
