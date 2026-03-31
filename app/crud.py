@@ -2,16 +2,16 @@ from sqlalchemy.orm import Session
 from . import models
 
 
-def create_lead(db: Session, lead):
-    db_lead = models.Lead(**lead.dict())
+def create_lead(db: Session, lead, user_id: int):
+    db_lead = models.Lead(**lead.dict(), user_id=user_id)
     db.add(db_lead)
     db.commit()
     db.refresh(db_lead)
     return db_lead
 
 
-def get_leads(db):
-    return db.query(models.Lead).all()
+def get_leads(db: Session, user_id: int):
+    return db.query(models.Lead).filter(models.Lead.user_id == user_id).all()
 
 
 def create_property(db: Session, prop):
